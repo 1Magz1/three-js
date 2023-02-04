@@ -3,11 +3,16 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, onBeforeUnmount } from 'vue';
 import SpaceScene from '../webgl/SpaceScene';
+import AbstractWebgl from '../webgl/AbstractWebgl';
 
+let webgl = null as AbstractWebgl | null;
 onMounted(() => {
-  const webgl = new SpaceScene();
+  webgl = new SpaceScene('space-scene');
   webgl.create();
+});
+onBeforeUnmount(() => {
+  webgl?.destroy();
 });
 </script>
