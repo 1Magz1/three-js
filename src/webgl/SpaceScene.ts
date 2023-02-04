@@ -30,14 +30,15 @@ export default class SpaceScene implements AbstractWebgl {
 
   private coreMesh: Mesh | null;
 
+  private backgroundSphereMesh: Mesh | null;
+
   constructor(elementId: string) {
     this.canvas = document.getElementById(elementId) as HTMLCanvasElement;
-
     this.render = new THREE.WebGLRenderer({
       canvas: this.canvas,
-      antialias: true,
+      antialias: false,
+      alpha: false,
     });
-
     this.camera = new THREE.PerspectiveCamera(
       90,
       window.innerWidth / window.innerHeight,
@@ -45,11 +46,11 @@ export default class SpaceScene implements AbstractWebgl {
       1000,
     );
     this.scene = new THREE.Scene();
-
     this.textureLoader = new THREE.TextureLoader();
 
     this.textureMap = [];
     this.coreMesh = null;
+    this.backgroundSphereMesh = null;
 
     this.animId = requestAnimationFrame(() => {
       this.update();
@@ -85,6 +86,16 @@ export default class SpaceScene implements AbstractWebgl {
     requestAnimationFrame(() => this.update());
   }
 
+  addLight() {
+    const directionalLight = new THREE.DirectionalLight('#fff', 2);
+    directionalLight.position.set(0, 50, -20);
+    this.scene?.add(directionalLight);
+
+    const ambientLight = new THREE.AmbientLight('#fff', 1);
+    ambientLight.position.set(0, 20, 20);
+    this.scene?.add(ambientLight);
+  }
+
   onWindowResize(): void {
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -111,10 +122,10 @@ export default class SpaceScene implements AbstractWebgl {
   private loadTextures():void {
     SPACE_SCENE_TEXTURE_MAP.forEach((item: string) => {
       this.textureLoader.load(item, (texture: Texture) => {
-        console.log(texture);
         this.textureMap.push(texture);
         if (this.textureMap.length === SPACE_SCENE_TEXTURE_MAP.length) {
           this.addCore();
+          this.addBackgroundSphere();
         }
       });
     });
@@ -125,28 +136,28 @@ export default class SpaceScene implements AbstractWebgl {
     geometry.computeTangents();
     geometry.normalizeNormals();
 
-    const material = new THREE.MeshPhongMaterial({ map: this.textureMap[1] });
+    const material = new THREE.MeshPhongMaterial({ map: this.textureMap[0] });
 
     this.coreMesh = new THREE.Mesh(geometry, material);
     this.scene?.add(this.coreMesh);
   }
 
-  addLight() {
-    const directionalLight = new THREE.DirectionalLight('#fff', 2);
-    directionalLight.position.set(0, 50, -20);
-    this.scene?.add(directionalLight);
-
-    const ambientLight = new THREE.AmbientLight('#fff', 1);
-    ambientLight.position.set(0, 20, 20);
-    this.scene?.add(ambientLight);
+  private addBackgroundSphere() {
+    const geometry = new THREE.SphereGeometry(150, 40, 40);
+    const material = new THREE.MeshBasicMaterial({
+      side: THREE.BackSide,
+      map: this.textureMap[1],
+    });
+    this.backgroundSphereMesh = new THREE.Mesh(geometry, material);
+    this.scene?.add(this.backgroundSphereMesh);
   }
 
   private addControls() {
     if (this.camera && this.render) {
       const controls = new OrbitControls(this.camera, this.render.domElement);
-      controls.maxPolarAngle = Math.PI * 0.5;
+      controls.maxPolarAngle = Math.PI * 0.8;
       controls.minDistance = 1;
-      controls.maxDistance = 50;
+      controls.maxDistance = 150;
     }
   }
 }
