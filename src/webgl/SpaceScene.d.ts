@@ -1,0 +1,35 @@
+import { Scene, WebGLRenderer, PerspectiveCamera, Vector3 } from 'three';
+import AbstractWebgl from './AbstractWebgl';
+export default class SpaceScene extends AbstractWebgl {
+    protected canvas: HTMLCanvasElement | null;
+    protected camera: PerspectiveCamera | null;
+    protected render: WebGLRenderer | null;
+    protected scene: Scene | null;
+    protected animId: number | null;
+    private textureLoader;
+    private textureMap;
+    private coreMesh;
+    private backgroundSphereMesh;
+    private noise;
+    private points;
+    private stars;
+    private readonly pointsAmount;
+    constructor(elementId: string);
+    create(): void;
+    destroy(): void;
+    protected update(time: number): void;
+    protected addLight(): void;
+    protected onWindowResize(): void;
+    private initRender;
+    private textureLoading;
+    private addCore;
+    private animCore;
+    private addBackgroundSphere;
+    private animBackgroundSphere;
+    private addPoints;
+    private animPoints;
+    private addStars;
+    private animStars;
+    randomPointSphere(radius: number): Vector3;
+    private addControls;
+}
