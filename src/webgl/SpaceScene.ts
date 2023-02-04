@@ -14,15 +14,15 @@ import AbstractWebgl from './AbstractWebgl';
 import { SPACE_SCENE_TEXTURE_MAP } from './constants';
 
 export default class SpaceScene extends AbstractWebgl {
-  canvas: HTMLCanvasElement | null;
+  protected canvas: HTMLCanvasElement | null;
 
-  camera: PerspectiveCamera | null;
+  protected camera: PerspectiveCamera | null;
 
-  render: WebGLRenderer | null;
+  protected render: WebGLRenderer | null;
 
-  scene: Scene | null;
+  protected scene: Scene | null;
 
-  animId: number | null;
+  protected animId: number | null;
 
   private textureLoader: TextureLoader;
 

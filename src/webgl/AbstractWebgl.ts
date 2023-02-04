@@ -5,15 +5,15 @@ import {
 } from 'three';
 
 export default abstract class AbstractWebgl {
-  abstract canvas: HTMLCanvasElement | null
+  protected abstract canvas: HTMLCanvasElement | null
 
-  abstract camera: Camera | null
+  protected abstract camera: Camera | null
 
-  abstract scene: Scene | null
+  protected abstract scene: Scene | null
 
-  abstract render: WebGLRenderer | null
+  protected abstract render: WebGLRenderer | null
 
-  abstract animId: number | null;
+  protected abstract animId: number | null;
 
   abstract create(): void
 
