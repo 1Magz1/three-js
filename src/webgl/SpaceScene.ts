@@ -9,6 +9,8 @@ import {
   Mesh,
   SphereGeometry,
   BufferAttribute,
+  Points,
+  Vector3,
 } from 'three';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -37,6 +39,10 @@ export default class SpaceScene extends AbstractWebgl {
 
   private noise: SimplexNoise | null;
 
+  private points: Points | null;
+
+  private readonly pointsAmount: number;
+
   constructor(elementId: string) {
     super();
     this.canvas = document.getElementById(elementId) as HTMLCanvasElement;
@@ -57,7 +63,9 @@ export default class SpaceScene extends AbstractWebgl {
     this.textureMap = [];
     this.coreMesh = null;
     this.backgroundSphereMesh = null;
+    this.points = null;
     this.noise = new SimplexNoise();
+    this.pointsAmount = 100;
 
     this.animId = requestAnimationFrame((time: number) => {
       this.update(time);
@@ -66,7 +74,7 @@ export default class SpaceScene extends AbstractWebgl {
 
   create(): void {
     this.initRender();
-    this.loadTextures();
+    this.textureLoading();
     this.addLight();
     this.addControls();
   }
@@ -81,6 +89,7 @@ export default class SpaceScene extends AbstractWebgl {
     this.backgroundSphereMesh = null;
     this.noise = null;
     this.textureMap = [];
+    this.points = null;
     if (this.animId) {
       cancelAnimationFrame(this.animId);
       this.animId = null;
@@ -97,6 +106,9 @@ export default class SpaceScene extends AbstractWebgl {
     }
     if (this.coreMesh) {
       this.animCore(time);
+    }
+    if (this.points) {
+      this.animPoints();
     }
     requestAnimationFrame((currentTime: number) => this.update(currentTime));
   }
@@ -134,18 +146,20 @@ export default class SpaceScene extends AbstractWebgl {
     }, false);
   }
 
-  private loadTextures():void {
+  private textureLoading():void {
     SPACE_SCENE_TEXTURE_MAP.forEach((item: string) => {
       this.textureLoader?.load(item, (texture: Texture) => {
         this.textureMap.push(texture);
         if (this.textureMap.length === SPACE_SCENE_TEXTURE_MAP.length) {
           this.addCore();
           this.addBackgroundSphere();
+          this.addPoints();
         }
       });
     });
   }
 
+  // Core
   private addCore(): void {
     const geometry = new THREE.SphereGeometry(30, 10);
     geometry.computeTangents();
@@ -190,6 +204,7 @@ export default class SpaceScene extends AbstractWebgl {
     geometry.attributes.position.needsUpdate = true;
   }
 
+  // Background Sphere
   private addBackgroundSphere(): void {
     const geometry = new THREE.SphereGeometry(150, 40, 40);
     const material = new THREE.MeshBasicMaterial({
@@ -202,8 +217,92 @@ export default class SpaceScene extends AbstractWebgl {
 
   private animBackgroundSphere(): void {
     if (this.backgroundSphereMesh) {
-      this.backgroundSphereMesh.rotation.y += 0.0005;
+      this.backgroundSphereMesh.rotation.y += 0.0008;
     }
+  }
+
+  // Points
+  private addPoints() {
+    const vertices = [];
+    const velocity = [];
+
+    for (let i = 0; i < this.pointsAmount; i++) {
+      const particle = this.randomPointSphere(150 + i);
+      vertices.push(particle.x, particle.y, particle.z);
+      velocity.push(THREE.MathUtils.randInt(50, 200));
+    }
+
+    const geometry = new THREE.SphereGeometry();
+
+    geometry.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(vertices, 3),
+    );
+
+    geometry.setAttribute(
+      'startPosition',
+      new THREE.Float32BufferAttribute(vertices, 3),
+    );
+
+    geometry.setAttribute(
+      'velocity',
+      new THREE.Float32BufferAttribute(velocity, 1),
+    );
+
+    const material = new THREE.PointsMaterial({
+      size: 3,
+      color: '#ffffff',
+      transparent: true,
+      opacity: 0.8,
+      map: this.textureMap[2],
+      blending: THREE.NormalBlending,
+    });
+    material.depthWrite = false;
+
+    this.points = new THREE.Points(geometry, material);
+
+    this.scene?.add(this.points);
+  }
+
+  private animPoints() {
+    const geometry = this.points?.geometry as SphereGeometry;
+    const position = geometry.getAttribute('position');
+    const startPosition = geometry.getAttribute('startPosition');
+
+    const { count } = geometry.attributes.position;
+    const vector = new THREE.Vector3();
+
+    for (let index = 0; index < count; index++) {
+      vector.fromBufferAttribute(position as BufferAttribute, index);
+
+      let velocity = (geometry.attributes.velocity as BufferAttribute).getX(index);
+      velocity -= 0.3;
+
+      if (vector.x <= 5 && vector.x >= -5 && vector.z <= 5 && vector.z >= -5) {
+        vector.fromBufferAttribute(startPosition as BufferAttribute, index);
+
+        velocity = THREE.MathUtils.randInt(50, 300);
+      }
+
+      (this.points?.geometry.attributes.position as BufferAttribute).setXYZ(
+        index,
+        vector.x += (0 - vector.x) / velocity,
+        vector.y += (0 - vector.y) / velocity,
+        vector.z += (0 - vector.z) / velocity,
+      );
+
+      geometry.attributes.position.needsUpdate = true;
+    }
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  randomPointSphere(radius: number): Vector3 {
+    const theta = 2 * Math.PI * Math.random();
+    const phi = Math.acos(2 * Math.random() - 1);
+    const dx = radius * Math.sin(phi) * Math.cos(theta);
+    const dy = radius * Math.sin(phi) * Math.sin(theta);
+    const dz = radius * Math.cos(phi);
+    return new THREE.Vector3(dx, dy, dz);
   }
 
   private addControls() {
