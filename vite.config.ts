@@ -5,7 +5,7 @@ import inspect from 'vite-plugin-inspect';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/<REPO>/',
+  base: 'three-js',
   plugins: [
     vue(),
     inspect(),
