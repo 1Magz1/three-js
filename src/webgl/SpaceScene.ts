@@ -4,11 +4,16 @@ import {
   Scene,
   WebGLRenderer,
   PerspectiveCamera,
+  TextureLoader,
+  Texture,
+  Mesh,
 } from 'three';
 
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import AbstractWebgl from './AbstractWebgl';
+import { SPACE_SCENE_TEXTURE_MAP } from './constants';
 
-export default class SpaceScene extends AbstractWebgl {
+export default class SpaceScene implements AbstractWebgl {
   canvas: HTMLCanvasElement | null;
 
   camera: PerspectiveCamera | null;
@@ -19,14 +24,18 @@ export default class SpaceScene extends AbstractWebgl {
 
   animId: number | null;
 
-  constructor() {
-    super();
-    this.canvas = document.getElementById('space-scene') as HTMLCanvasElement;
+  private textureLoader: TextureLoader;
+
+  private readonly textureMap: Texture[];
+
+  private coreMesh: Mesh | null;
+
+  constructor(elementId: string) {
+    this.canvas = document.getElementById(elementId) as HTMLCanvasElement;
 
     this.render = new THREE.WebGLRenderer({
       canvas: this.canvas,
-      antialias: false,
-      alpha: false,
+      antialias: true,
     });
 
     this.camera = new THREE.PerspectiveCamera(
@@ -37,16 +46,21 @@ export default class SpaceScene extends AbstractWebgl {
     );
     this.scene = new THREE.Scene();
 
+    this.textureLoader = new THREE.TextureLoader();
+
+    this.textureMap = [];
+    this.coreMesh = null;
+
     this.animId = requestAnimationFrame(() => {
       this.update();
     });
   }
 
   create(): void {
-    this.render?.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.render?.setSize(window.innerWidth, window.innerHeight);
-
-    this.camera?.position.set(0, 0, 150);
+    this.initRender();
+    this.loadTextures();
+    this.addLight();
+    this.addControls();
   }
 
   destroy(): void {
@@ -54,17 +68,24 @@ export default class SpaceScene extends AbstractWebgl {
     this.render = null;
     this.scene = null;
     this.camera = null;
+    this.coreMesh = null;
     if (this.animId) {
       cancelAnimationFrame(this.animId);
       this.animId = null;
     }
+    window.removeEventListener('resize', () => {
+      this.onWindowResize();
+    }, false);
   }
 
   update(): void {
+    if (this.scene && this.camera) {
+      this.render?.render(this.scene, this.camera);
+    }
     requestAnimationFrame(() => this.update());
   }
 
-  onWindowResize() {
+  onWindowResize(): void {
     const width = window.innerWidth;
     const height = window.innerHeight;
 
@@ -74,5 +95,58 @@ export default class SpaceScene extends AbstractWebgl {
     }
 
     this.render?.setSize(width, height);
+  }
+
+  private initRender(): void {
+    this.render?.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.render?.setSize(window.innerWidth, window.innerHeight);
+
+    this.camera?.position.set(0, 0, 150);
+
+    window.addEventListener('resize', () => {
+      this.onWindowResize();
+    }, false);
+  }
+
+  private loadTextures():void {
+    SPACE_SCENE_TEXTURE_MAP.forEach((item: string) => {
+      this.textureLoader.load(item, (texture: Texture) => {
+        console.log(texture);
+        this.textureMap.push(texture);
+        if (this.textureMap.length === SPACE_SCENE_TEXTURE_MAP.length) {
+          this.addCore();
+        }
+      });
+    });
+  }
+
+  private addCore(): void {
+    const geometry = new THREE.SphereGeometry(30, 10);
+    geometry.computeTangents();
+    geometry.normalizeNormals();
+
+    const material = new THREE.MeshPhongMaterial({ map: this.textureMap[1] });
+
+    this.coreMesh = new THREE.Mesh(geometry, material);
+    this.scene?.add(this.coreMesh);
+  }
+
+  addLight() {
+    const directionalLight = new THREE.DirectionalLight('#fff', 2);
+    directionalLight.position.set(0, 50, -20);
+    this.scene?.add(directionalLight);
+
+    const ambientLight = new THREE.AmbientLight('#fff', 1);
+    ambientLight.position.set(0, 20, 20);
+    this.scene?.add(ambientLight);
+  }
+
+  private addControls() {
+    if (this.camera && this.render) {
+      const controls = new OrbitControls(this.camera, this.render.domElement);
+      controls.maxPolarAngle = Math.PI * 0.5;
+      controls.minDistance = 1;
+      controls.maxDistance = 50;
+    }
   }
 }
