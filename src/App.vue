@@ -1,47 +1,9 @@
 <template>
   <div class="page">
-    <div>
-      <a
-        href="https://vitejs.dev"
-        target="_blank"
-      >
-        <img
-          src="/icons/vite.svg"
-          class="logo"
-          alt="Vite logo"
-        >
-      </a>
-      <a
-        href="https://vuejs.org/"
-        target="_blank"
-      >
-        <img
-          src="./assets/icons/vue.svg"
-          class="logo vue"
-          alt="Vue logo"
-        >
-      </a>
-    </div>
-    <HelloWorld msg="Vite + Vue" />
+    <SpaceScene />
   </div>
 </template>
 
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue';
+import SpaceScene from './components/SpaceScene.vue';
 </script>
-
-<style scoped lang="scss">
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  &:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .vue {
-    &:hover {
-      filter: drop-shadow(0 0 2em #42b883aa);
-    }
-  }
-}
-</style>
