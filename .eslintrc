@@ -21,6 +21,12 @@
   ],
   "globals": {
     "NodeJS": true
+  },
+  "rules": {
+    "import/no-unresolved": "off",
+    "import/no-extraneous-dependencies": "off",
+    "import/extensions": "off",
+    "no-plusplus": "off"
   }
 }
 
