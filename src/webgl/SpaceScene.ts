@@ -81,6 +81,7 @@ export default class SpaceScene extends AbstractWebgl {
   }
 
   protected update(): void {
+    this.animBackgroundSphere();
     if (this.scene && this.camera) {
       this.render?.render(this.scene, this.camera);
     }
@@ -151,6 +152,12 @@ export default class SpaceScene extends AbstractWebgl {
     });
     this.backgroundSphereMesh = new THREE.Mesh(geometry, material);
     this.scene?.add(this.backgroundSphereMesh);
+  }
+
+  private animBackgroundSphere() {
+    if (this.backgroundSphereMesh) {
+      this.backgroundSphereMesh.rotation.y += 0.0005;
+    }
   }
 
   private addControls() {
