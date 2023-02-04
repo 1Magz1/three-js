@@ -19,7 +19,7 @@ export default abstract class AbstractWebgl {
 
   abstract destroy(): void
 
-  protected abstract update(): void
+  protected abstract update(time: number): void
 
   protected abstract addLight(): void
 
