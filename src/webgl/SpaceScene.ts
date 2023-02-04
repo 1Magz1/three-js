@@ -13,7 +13,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import AbstractWebgl from './AbstractWebgl';
 import { SPACE_SCENE_TEXTURE_MAP } from './constants';
 
-export default class SpaceScene implements AbstractWebgl {
+export default class SpaceScene extends AbstractWebgl {
   canvas: HTMLCanvasElement | null;
 
   camera: PerspectiveCamera | null;
@@ -33,6 +33,7 @@ export default class SpaceScene implements AbstractWebgl {
   private backgroundSphereMesh: Mesh | null;
 
   constructor(elementId: string) {
+    super();
     this.canvas = document.getElementById(elementId) as HTMLCanvasElement;
     this.render = new THREE.WebGLRenderer({
       canvas: this.canvas,
@@ -79,14 +80,14 @@ export default class SpaceScene implements AbstractWebgl {
     }, false);
   }
 
-  update(): void {
+  protected update(): void {
     if (this.scene && this.camera) {
       this.render?.render(this.scene, this.camera);
     }
     requestAnimationFrame(() => this.update());
   }
 
-  addLight() {
+  protected addLight() {
     const directionalLight = new THREE.DirectionalLight('#fff', 2);
     directionalLight.position.set(0, 50, -20);
     this.scene?.add(directionalLight);
@@ -96,7 +97,7 @@ export default class SpaceScene implements AbstractWebgl {
     this.scene?.add(ambientLight);
   }
 
-  onWindowResize(): void {
+  protected onWindowResize(): void {
     const width = window.innerWidth;
     const height = window.innerHeight;
 

@@ -19,7 +19,9 @@ export default abstract class AbstractWebgl {
 
   abstract destroy(): void
 
-  abstract update(): void
+  protected abstract update(): void
 
-  abstract onWindowResize(): void
+  protected abstract addLight(): void
+
+  protected abstract onWindowResize(): void
 }
