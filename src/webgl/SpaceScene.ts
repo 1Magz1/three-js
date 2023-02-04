@@ -41,6 +41,8 @@ export default class SpaceScene extends AbstractWebgl {
 
   private points: Points | null;
 
+  private stars: Points[];
+
   private readonly pointsAmount: number;
 
   constructor(elementId: string) {
@@ -61,11 +63,12 @@ export default class SpaceScene extends AbstractWebgl {
     this.textureLoader = new THREE.TextureLoader();
 
     this.textureMap = [];
+    this.stars = [];
     this.coreMesh = null;
     this.backgroundSphereMesh = null;
     this.points = null;
     this.noise = new SimplexNoise();
-    this.pointsAmount = 100;
+    this.pointsAmount = 30;
 
     this.animId = requestAnimationFrame((time: number) => {
       this.update(time);
@@ -89,6 +92,7 @@ export default class SpaceScene extends AbstractWebgl {
     this.backgroundSphereMesh = null;
     this.noise = null;
     this.textureMap = [];
+    this.stars = [];
     this.points = null;
     if (this.animId) {
       cancelAnimationFrame(this.animId);
@@ -100,15 +104,14 @@ export default class SpaceScene extends AbstractWebgl {
   }
 
   protected update(time: number): void {
-    this.animBackgroundSphere();
     if (this.scene && this.camera) {
       this.render?.render(this.scene, this.camera);
     }
-    if (this.coreMesh) {
+    if (this.coreMesh && this.points && this.stars && this.backgroundSphereMesh) {
+      this.animBackgroundSphere();
       this.animCore(time);
-    }
-    if (this.points) {
       this.animPoints();
+      this.animStars();
     }
     requestAnimationFrame((currentTime: number) => this.update(currentTime));
   }
@@ -139,7 +142,7 @@ export default class SpaceScene extends AbstractWebgl {
     this.render?.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.render?.setSize(window.innerWidth, window.innerHeight);
 
-    this.camera?.position.set(0, 0, 150);
+    this.camera?.position.set(0, 0, 100);
 
     window.addEventListener('resize', () => {
       this.onWindowResize();
@@ -154,6 +157,9 @@ export default class SpaceScene extends AbstractWebgl {
           this.addCore();
           this.addBackgroundSphere();
           this.addPoints();
+          this.addStars(this.textureMap[3], 15, 20);
+          this.addStars(this.textureMap[4], 5, 5);
+          this.addStars(this.textureMap[5], 7, 5);
         }
       });
     });
@@ -202,6 +208,9 @@ export default class SpaceScene extends AbstractWebgl {
     }
     geometry.computeVertexNormals();
     geometry.attributes.position.needsUpdate = true;
+    if (this.coreMesh) {
+      this.coreMesh.rotation.y -= 0.004;
+    }
   }
 
   // Background Sphere
@@ -295,6 +304,41 @@ export default class SpaceScene extends AbstractWebgl {
     }
   }
 
+  // Stars
+  private addStars(map: Texture, size: number, total: number) {
+    const vertices = [] as number[];
+    const geometry = new THREE.SphereGeometry();
+    const material = new THREE.PointsMaterial({
+      size,
+      map,
+      blending: THREE.AdditiveBlending,
+    });
+
+    for (let i = 0; i < total; i++) {
+      const radius = THREE.MathUtils.randInt(149, 70);
+      const particle = this.randomPointSphere(radius);
+      vertices.push(particle.x, particle.y, particle.z);
+    }
+
+    geometry.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(vertices, 3),
+    );
+
+    const star = new THREE.Points(geometry, material);
+
+    this.stars.push(star);
+
+    this.scene?.add(star);
+  }
+
+  private animStars() {
+    this.stars.forEach((stars: Points) => {
+      // eslint-disable-next-line no-param-reassign
+      stars.rotation.y += 0.008;
+    });
+  }
+
   // eslint-disable-next-line class-methods-use-this
   randomPointSphere(radius: number): Vector3 {
     const theta = 2 * Math.PI * Math.random();
@@ -310,7 +354,7 @@ export default class SpaceScene extends AbstractWebgl {
       const controls = new OrbitControls(this.camera, this.render.domElement);
       controls.maxPolarAngle = Math.PI * 0.8;
       controls.minDistance = 1;
-      controls.maxDistance = 150;
+      controls.maxDistance = 100;
     }
   }
 }

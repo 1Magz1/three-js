@@ -1,5 +1,7 @@
 <template>
-  <canvas id="space-scene" />
+  <div class="scene">
+    <canvas id="space-scene" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -16,3 +18,11 @@ onBeforeUnmount(() => {
   webgl?.destroy();
 });
 </script>
+
+<style>
+.scene {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+</style>
