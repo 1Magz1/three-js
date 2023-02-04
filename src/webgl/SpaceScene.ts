@@ -7,9 +7,12 @@ import {
   TextureLoader,
   Texture,
   Mesh,
+  SphereGeometry,
+  BufferAttribute,
 } from 'three';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { SimplexNoise } from 'three/examples/jsm/math/SimplexNoise';
 import AbstractWebgl from './AbstractWebgl';
 import { SPACE_SCENE_TEXTURE_MAP } from './constants';
 
@@ -24,13 +27,15 @@ export default class SpaceScene extends AbstractWebgl {
 
   protected animId: number | null;
 
-  private textureLoader: TextureLoader;
+  private textureLoader: TextureLoader | null;
 
-  private readonly textureMap: Texture[];
+  private textureMap: Texture[];
 
   private coreMesh: Mesh | null;
 
   private backgroundSphereMesh: Mesh | null;
+
+  private noise: SimplexNoise | null;
 
   constructor(elementId: string) {
     super();
@@ -52,9 +57,10 @@ export default class SpaceScene extends AbstractWebgl {
     this.textureMap = [];
     this.coreMesh = null;
     this.backgroundSphereMesh = null;
+    this.noise = new SimplexNoise();
 
-    this.animId = requestAnimationFrame(() => {
-      this.update();
+    this.animId = requestAnimationFrame((time: number) => {
+      this.update(time);
     });
   }
 
@@ -70,7 +76,11 @@ export default class SpaceScene extends AbstractWebgl {
     this.render = null;
     this.scene = null;
     this.camera = null;
+    this.textureLoader = null;
     this.coreMesh = null;
+    this.backgroundSphereMesh = null;
+    this.noise = null;
+    this.textureMap = [];
     if (this.animId) {
       cancelAnimationFrame(this.animId);
       this.animId = null;
@@ -80,12 +90,15 @@ export default class SpaceScene extends AbstractWebgl {
     }, false);
   }
 
-  protected update(): void {
+  protected update(time: number): void {
     this.animBackgroundSphere();
     if (this.scene && this.camera) {
       this.render?.render(this.scene, this.camera);
     }
-    requestAnimationFrame(() => this.update());
+    if (this.coreMesh) {
+      this.animCore(time);
+    }
+    requestAnimationFrame((currentTime: number) => this.update(currentTime));
   }
 
   protected addLight() {
@@ -123,7 +136,7 @@ export default class SpaceScene extends AbstractWebgl {
 
   private loadTextures():void {
     SPACE_SCENE_TEXTURE_MAP.forEach((item: string) => {
-      this.textureLoader.load(item, (texture: Texture) => {
+      this.textureLoader?.load(item, (texture: Texture) => {
         this.textureMap.push(texture);
         if (this.textureMap.length === SPACE_SCENE_TEXTURE_MAP.length) {
           this.addCore();
@@ -144,7 +157,40 @@ export default class SpaceScene extends AbstractWebgl {
     this.scene?.add(this.coreMesh);
   }
 
-  private addBackgroundSphere() {
+  private animCore(time: number): void {
+    const geometry = this.coreMesh?.geometry as SphereGeometry;
+    const position = geometry.getAttribute('position');
+    const vector = new THREE.Vector3();
+
+    const { count } = geometry.attributes.position;
+    const { radius } = geometry.parameters;
+
+    for (let index = 0; index < count; index++) {
+      vector.fromBufferAttribute(position as BufferAttribute, index);
+      vector.normalize();
+
+      let length = 0;
+      if (this.noise) {
+        length = radius + this.noise.noise3d(
+          vector.x + time * 0.0005,
+          vector.y + time * 0.0003,
+          vector.z + time * 0.0008,
+        ) * 5;
+      }
+
+      vector.multiplyScalar(length);
+      (geometry.attributes.position as BufferAttribute).setXYZ(
+        index,
+        vector.x,
+        vector.y,
+        vector.z,
+      );
+    }
+    geometry.computeVertexNormals();
+    geometry.attributes.position.needsUpdate = true;
+  }
+
+  private addBackgroundSphere(): void {
     const geometry = new THREE.SphereGeometry(150, 40, 40);
     const material = new THREE.MeshBasicMaterial({
       side: THREE.BackSide,
@@ -154,7 +200,7 @@ export default class SpaceScene extends AbstractWebgl {
     this.scene?.add(this.backgroundSphereMesh);
   }
 
-  private animBackgroundSphere() {
+  private animBackgroundSphere(): void {
     if (this.backgroundSphereMesh) {
       this.backgroundSphereMesh.rotation.y += 0.0005;
     }
