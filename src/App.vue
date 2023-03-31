@@ -14,7 +14,7 @@ import { ref, markRaw } from 'vue';
 import SynthWaveScene from './components/SynthWaveScene.vue';
 import HeaderComponent from './components/HeaderComponent.vue';
 
-const scene = ref(null);
+const scene = ref('');
 scene.value = markRaw(SynthWaveScene);
 
 const setCurrentScene = (value: any) => {
