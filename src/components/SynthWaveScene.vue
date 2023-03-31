@@ -5,6 +5,20 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue';
+import AbstractWebgl from '../webgl/AbstractWebgl';
+import SynthWaveScene from '../webgl/SynthWaveScene';
+
+let webgl = null as AbstractWebgl | null;
+
+onMounted(() => {
+  webgl = new SynthWaveScene('synth-wave-scene');
+  webgl.create();
+});
+
+onUnmounted(() => {
+  webgl?.destroy();
+});
 
 </script>
 
