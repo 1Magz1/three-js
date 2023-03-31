@@ -22,10 +22,9 @@ onBeforeUnmount(() => {
 
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .scene {
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
 }
 </style>

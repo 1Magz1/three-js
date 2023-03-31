@@ -21,3 +21,11 @@ const setCurrentScene = (value: any) => {
   scene.value = markRaw(value);
 };
 </script>
+
+<style lang="scss">
+.page {
+  &__content {
+    overflow: hidden;
+  }
+}
+</style>
