@@ -124,6 +124,25 @@ export default class SynthWaveScene extends AbstractWebgl {
     this.scene?.add(this.directionLight2);
   }
 
+  protected update(time: number): void {
+    if (this.scene && this.camera) {
+      this.render?.render(this.scene, this.camera);
+      this.uniforms.u_time.value = this.clock.getElapsedTime();
+    }
+    requestAnimationFrame((currentTime: number) => this.update(currentTime));
+  }
+
+  private initRender(): void {
+    this.render?.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.render?.setSize(window.innerWidth, window.innerHeight);
+
+    this.camera?.position.set(0, 0, 5);
+
+    window.addEventListener('resize', () => {
+      this.onWindowResize();
+    }, false);
+  }
+
   // Sun
   private addSun(): void {
     const uniforms = {
@@ -147,24 +166,5 @@ export default class SynthWaveScene extends AbstractWebgl {
     sun.position.set(0, 16, -100);
 
     this.scene?.add(sun);
-  }
-
-  protected update(time: number): void {
-    if (this.scene && this.camera) {
-      this.render?.render(this.scene, this.camera);
-      this.uniforms.u_time.value = this.clock.getElapsedTime();
-    }
-    requestAnimationFrame((currentTime: number) => this.update(currentTime));
-  }
-
-  private initRender(): void {
-    this.render?.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.render?.setSize(window.innerWidth, window.innerHeight);
-
-    this.camera?.position.set(0, 0, 5);
-
-    window.addEventListener('resize', () => {
-      this.onWindowResize();
-    }, false);
   }
 }
