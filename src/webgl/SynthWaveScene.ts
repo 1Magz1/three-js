@@ -5,9 +5,12 @@ import {
   WebGLRenderer,
 } from 'three';
 import * as THREE from 'three';
-import * as vertexShader from '../glsl/sunVertexShader.glsl';
-import * as fragmentShader from '../glsl/sunFragmentShader.glsl';
+// @ts-ignore
+import vertexShader from '../glsl/sun/vertexShader.glsl';
+// @ts-ignore
+import fragmentShader from '../glsl/sun/fragmentShader.glsl';
 import AbstractWebgl from './AbstractWebgl';
+import { hexToRgb } from '../utils/constants';
 
 export default class SynthWaveScene extends AbstractWebgl {
   protected animId: number | null;
@@ -23,6 +26,22 @@ export default class SynthWaveScene extends AbstractWebgl {
   private directionLight1: DirectionalLight | null;
 
   private directionLight2: DirectionalLight | null;
+
+  private uniform = {
+    u_time: { value: 0.0 },
+    u_mouse: {
+      value: {
+        x: 0.0,
+        y: 0.0,
+      },
+    },
+    u_resolution: {
+      value: {
+        x: window.innerWidth * window.devicePixelRatio,
+        y: window.innerHeight * window.devicePixelRatio,
+      },
+    },
+  }
 
   constructor(elementId: string) {
     super();
@@ -103,12 +122,21 @@ export default class SynthWaveScene extends AbstractWebgl {
 
   // Sun
   private addSun(): void {
+    const uniforms = {
+      ...this.uniform,
+      color_main: {
+        value: hexToRgb('#ffab00', true),
+      },
+      color_accent: {
+        value: hexToRgb('#ff51c8', true),
+      },
+    };
     const geometry = new THREE.SphereGeometry(30, 64, 64);
     const material = new THREE.ShaderMaterial({
-      // uniforms,
-      // vertexShader,
-      // fragmentShader,
-      // transparent: true,
+      uniforms,
+      vertexShader,
+      fragmentShader,
+      transparent: true,
     });
 
     const sun = new THREE.Mesh(geometry, material);
