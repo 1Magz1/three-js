@@ -3,6 +3,7 @@ import {
   PerspectiveCamera,
   Scene,
   WebGLRenderer,
+  Clock,
 } from 'three';
 import * as THREE from 'three';
 // @ts-ignore
@@ -27,7 +28,9 @@ export default class SynthWaveScene extends AbstractWebgl {
 
   private directionLight2: DirectionalLight | null;
 
-  private uniform = {
+  private clock: Clock;
+
+  private uniforms = {
     u_time: { value: 0.0 },
     u_mouse: {
       value: {
@@ -62,6 +65,7 @@ export default class SynthWaveScene extends AbstractWebgl {
     this.animId = requestAnimationFrame((time: number) => {
       this.update(time);
     });
+    this.clock = new THREE.Clock();
 
     this.directionLight1 = null;
     this.directionLight2 = null;
@@ -123,7 +127,7 @@ export default class SynthWaveScene extends AbstractWebgl {
   // Sun
   private addSun(): void {
     const uniforms = {
-      ...this.uniform,
+      ...this.uniforms,
       color_main: {
         value: hexToRgb('#ffab00', true),
       },
@@ -148,7 +152,9 @@ export default class SynthWaveScene extends AbstractWebgl {
   protected update(time: number): void {
     if (this.scene && this.camera) {
       this.render?.render(this.scene, this.camera);
+      this.uniforms.u_time.value = this.clock.getElapsedTime();
     }
+    requestAnimationFrame((currentTime: number) => this.update(currentTime));
   }
 
   private initRender(): void {
