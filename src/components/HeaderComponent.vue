@@ -15,7 +15,11 @@
 
 <script setup lang="ts">
 import { defineEmits } from 'vue';
-import { sceneList } from '../utils/constants';
+
+import SpaceScene from './SpaceScene.vue';
+import SynthWaveScene from './SynthWaveScene.vue';
+
+const sceneList = [SynthWaveScene, SpaceScene];
 
 const emit = defineEmits(['setCurrentScene']);
 let sceneIndex = 0;
