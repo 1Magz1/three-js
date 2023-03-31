@@ -50,7 +50,8 @@ export default class SynthWaveScene extends AbstractWebgl {
 
   create(): void {
     this.initRender();
-    // this.addSun();
+    this.addLight();
+    this.addSun();
   }
 
   destroy(): void {
@@ -105,9 +106,9 @@ export default class SynthWaveScene extends AbstractWebgl {
     const geometry = new THREE.SphereGeometry(30, 64, 64);
     const material = new THREE.ShaderMaterial({
       // uniforms,
-      vertexShader,
-      fragmentShader,
-      transparent: true,
+      // vertexShader,
+      // fragmentShader,
+      // transparent: true,
     });
 
     const sun = new THREE.Mesh(geometry, material);
