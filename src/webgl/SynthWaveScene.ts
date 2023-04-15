@@ -197,27 +197,7 @@ export default class SynthWaveScene extends AbstractWebgl {
     this.scene?.add(sun);
   }
 
-  // GUI controls
-  private initGui(): void {
-    const gui = new GUI();
-
-    const sunFolder = gui.addFolder('Sun');
-
-    sunFolder.addColor(this.params, 'topColor')
-      .name('top color')
-      .onChange((val: Color) => {
-        const clr = new THREE.Color(val);
-        this.uniforms.color_main.value = hexToRgb(clr.getHexString(), true);
-      });
-
-    sunFolder.addColor(this.params, 'bottomColor')
-      .name('bottom color')
-      .onChange((val: Color) => {
-        const clr = new THREE.Color(val);
-        this.uniforms.color_accent.value = hexToRgb(clr.getHexString(), true);
-      });
-  }
-
+  // Background Sphere
   private addBackgroundSphere(): void {
     const geometry = new THREE.SphereGeometry(300, 80, 80);
     const material = new THREE.MeshBasicMaterial({
@@ -243,5 +223,26 @@ export default class SynthWaveScene extends AbstractWebgl {
         this.addBackgroundSphere();
       },
     );
+  }
+
+  // GUI controls
+  private initGui(): void {
+    const gui = new GUI();
+
+    const sunFolder = gui.addFolder('Sun');
+
+    sunFolder.addColor(this.params, 'topColor')
+      .name('top color')
+      .onChange((val: Color) => {
+        const clr = new THREE.Color(val);
+        this.uniforms.color_main.value = hexToRgb(clr.getHexString(), true);
+      });
+
+    sunFolder.addColor(this.params, 'bottomColor')
+      .name('bottom color')
+      .onChange((val: Color) => {
+        const clr = new THREE.Color(val);
+        this.uniforms.color_accent.value = hexToRgb(clr.getHexString(), true);
+      });
   }
 }
