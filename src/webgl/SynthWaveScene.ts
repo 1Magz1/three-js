@@ -3,7 +3,7 @@ import {
   PerspectiveCamera,
   Scene,
   WebGLRenderer,
-  Clock, Color,
+  Clock, Color, TextureLoader, Texture, Mesh,
 } from 'three';
 import * as THREE from 'three';
 // @ts-ignore
@@ -14,6 +14,7 @@ import vertexShader from '../glsl/sun/vertexShader.glsl';
 import fragmentShader from '../glsl/sun/fragmentShader.glsl';
 import AbstractWebgl from './AbstractWebgl';
 import { hexToRgb } from '../utils/constants';
+import background from '../assets/images/space.jpg';
 
 export default class SynthWaveScene extends AbstractWebgl {
   protected animId: number | null;
@@ -60,6 +61,12 @@ export default class SynthWaveScene extends AbstractWebgl {
     bottomColor: 0xff51c8,
   };
 
+  private textureLoader: TextureLoader | null;
+
+  private backgroundSphereMesh: Mesh | null;
+
+  private backgroundTexture: Texture | null;
+
   constructor(elementId: string) {
     super();
 
@@ -80,15 +87,19 @@ export default class SynthWaveScene extends AbstractWebgl {
       this.update(time);
     });
     this.clock = new THREE.Clock();
+    this.textureLoader = new THREE.TextureLoader();
 
     this.directionLight1 = null;
     this.directionLight2 = null;
+    this.backgroundSphereMesh = null;
+    this.backgroundTexture = null;
   }
 
   create(): void {
     this.initRender();
     this.addLight();
     this.addSun();
+    this.addSceneBackground();
 
     this.initGui();
   }
@@ -100,6 +111,8 @@ export default class SynthWaveScene extends AbstractWebgl {
     this.camera = null;
     this.directionLight1 = null;
     this.directionLight2 = null;
+    this.textureLoader = null;
+    this.backgroundTexture = null;
 
     if (this.animId) {
       cancelAnimationFrame(this.animId);
@@ -144,6 +157,8 @@ export default class SynthWaveScene extends AbstractWebgl {
     if (this.scene && this.camera) {
       this.render?.render(this.scene, this.camera);
       this.uniforms.u_time.value = this.clock.getElapsedTime();
+
+      this.animBackgroundSphere();
     }
     requestAnimationFrame((currentTime: number) => this.update(currentTime));
   }
@@ -197,5 +212,32 @@ export default class SynthWaveScene extends AbstractWebgl {
         const clr = new THREE.Color(val);
         this.uniforms.color_accent.value = hexToRgb(clr.getHexString(), true);
       });
+  }
+
+  private addBackgroundSphere(): void {
+    const geometry = new THREE.SphereGeometry(300, 80, 80);
+    const material = new THREE.MeshBasicMaterial({
+      side: THREE.BackSide,
+      map: this.backgroundTexture,
+    });
+    this.backgroundSphereMesh = new THREE.Mesh(geometry, material);
+    this.scene?.add(this.backgroundSphereMesh);
+  }
+
+  private animBackgroundSphere(): void {
+    if (this.backgroundSphereMesh) {
+      this.backgroundSphereMesh.rotation.y += 0.0002;
+    }
+  }
+
+  private addSceneBackground(): void {
+    this.textureLoader?.load(
+      background,
+      (texture: Texture) => {
+        this.backgroundTexture = texture;
+
+        this.addBackgroundSphere();
+      },
+    );
   }
 }
