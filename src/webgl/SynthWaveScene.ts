@@ -3,7 +3,11 @@ import {
   PerspectiveCamera,
   Scene,
   WebGLRenderer,
-  Clock, Color, TextureLoader, Texture, Mesh,
+  Clock,
+  Color,
+  TextureLoader,
+  Texture,
+  Mesh,
 } from 'three';
 import * as THREE from 'three';
 // @ts-ignore
