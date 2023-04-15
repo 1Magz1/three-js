@@ -3,9 +3,11 @@ import {
   PerspectiveCamera,
   Scene,
   WebGLRenderer,
-  Clock,
+  Clock, Color,
 } from 'three';
 import * as THREE from 'three';
+// @ts-ignore
+import { GUI } from 'dat.gui';
 // @ts-ignore
 import vertexShader from '../glsl/sun/vertexShader.glsl';
 // @ts-ignore
@@ -44,7 +46,19 @@ export default class SynthWaveScene extends AbstractWebgl {
         y: window.innerHeight * window.devicePixelRatio,
       },
     },
-  }
+    color_main: {
+      value: hexToRgb('#ff0000', true),
+    },
+    color_accent: {
+      value: hexToRgb('#f1ff51', true),
+    },
+  };
+
+  private params = {
+    // sun params
+    topColor: 0xffab00,
+    bottomColor: 0xff51c8,
+  };
 
   constructor(elementId: string) {
     super();
@@ -75,6 +89,8 @@ export default class SynthWaveScene extends AbstractWebgl {
     this.initRender();
     this.addLight();
     this.addSun();
+
+    this.initGui();
   }
 
   destroy(): void {
@@ -147,12 +163,6 @@ export default class SynthWaveScene extends AbstractWebgl {
   private addSun(): void {
     const uniforms = {
       ...this.uniforms,
-      color_main: {
-        value: hexToRgb('#ffab00', true),
-      },
-      color_accent: {
-        value: hexToRgb('#ff51c8', true),
-      },
     };
     const geometry = new THREE.SphereGeometry(30, 64, 64);
     const material = new THREE.ShaderMaterial({
@@ -166,5 +176,26 @@ export default class SynthWaveScene extends AbstractWebgl {
     sun.position.set(0, 16, -100);
 
     this.scene?.add(sun);
+  }
+
+  // GUI controls
+  private initGui(): void {
+    const gui = new GUI();
+
+    const sunFolder = gui.addFolder('Sun');
+
+    sunFolder.addColor(this.params, 'topColor')
+      .name('top color')
+      .onChange((val: Color) => {
+        const clr = new THREE.Color(val);
+        this.uniforms.color_main.value = hexToRgb(clr.getHexString(), true);
+      });
+
+    sunFolder.addColor(this.params, 'bottomColor')
+      .name('bottom color')
+      .onChange((val: Color) => {
+        const clr = new THREE.Color(val);
+        this.uniforms.color_accent.value = hexToRgb(clr.getHexString(), true);
+      });
   }
 }
