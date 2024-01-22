@@ -1,30 +1,30 @@
 <template>
   <div class="scene">
-    <canvas id="space-scene" />
+    <canvas id="synth-wave-scene" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount } from 'vue';
-import SpaceScene from '../webgl/SpaceScene';
+import { onMounted, onUnmounted } from 'vue';
 import AbstractWebgl from '../webgl/AbstractWebgl';
+import SynthWaveScene from '../webgl/SynthWaveScene';
 
 let webgl = null as AbstractWebgl | null;
 
 onMounted(() => {
-  webgl = new SpaceScene('space-scene');
+  webgl = new SynthWaveScene('synth-wave-scene');
   webgl.create();
 });
 
-onBeforeUnmount(() => {
+onUnmounted(() => {
   webgl?.destroy();
 });
 
 </script>
 
-<style lang="scss" scoped>
+<style scoped lang="scss">
 .scene {
-  width: 100vw;
+  width: 100vh;
   height: 100vh;
 }
 </style>

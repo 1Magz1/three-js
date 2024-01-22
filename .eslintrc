@@ -26,7 +26,8 @@
     "import/no-unresolved": "off",
     "import/no-extraneous-dependencies": "off",
     "import/extensions": "off",
-    "no-plusplus": "off"
+    "no-plusplus": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
   }
 }
 
